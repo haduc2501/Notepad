@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Notepad · Bảo mật admin</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #f0f4fa 0%, #dde3ec 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+        .notepad-container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 44px;
+            box-shadow: 0 25px 50px -16px rgba(20,30,45,0.3);
+            padding: 38px 38px 44px;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 18px;
+            color: #0b2a3e;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 3px solid #b6d0dd;
+            padding-bottom: 20px;
+        }
+        h1 span {
+            background: #1f3a4e;
+            color: white;
+            font-size: 0.9rem;
+            padding: 6px 18px;
+            border-radius: 60px;
+            font-weight: 450;
+            letter-spacing: 0.8px;
+        }
+        /* ADMIN ZONE – các phần tử được căn chỉnh đồng đều */
+        .admin-zone {
+            background: #eaf0f8;
+            border-radius: 80px;
+            padding: 20px 26px;
+            margin-bottom: 30px;
+            border: 1px solid #ffffff;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.02), 0 8px 18px rgba(33,53,71,0.08);
+        }
+        .admin-label {
+            font-weight: 650;
+            color: #1c3f57;
+            background: rgba(200,225,245,0.8);
+            padding: 10px 22px;
+            border-radius: 60px;
+            font-size: 1rem;
+            letter-spacing: 0.4px;
+            flex: 0 0 auto;       /* không co giãn, chỉ chiếm vừa đủ nội dung */
+            white-space: nowrap;
+        }
+        /* CẢ BA PHẦN TỬ: input, button, span – KÍCH THƯỚC BẰNG NHAU, ĐỒNG BỘ PADDING */
+        #codeInput, #verifyBtn, #message {
+            flex: 1 1 0px;          /* chia đều không gian, cùng độ rộng */
+            min-width: 160px;       /* tránh bị ép quá nhỏ trên màn hình hẹp */
+            padding: 14px 20px;     /* thống nhất padding ngang/dọc */
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            border: none;
+            transition: 0.2s;
+            box-sizing: border-box;
+        }
+        /* Ô NHẬP CODE */
+        #codeInput {
+            background: white;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.02);
+            border: 1px solid #c8d8e6;
+            text-align: left;       /* nội dung căn trái cho dễ nhập */
+            padding-left: 24px;
+        }
+        #codeInput:focus {
+            border-color: #3a6a8b;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(58,106,139,0.1);
+        }
+        /* NÚT XÁC THỰC – đồng bộ padding, căn giữa */
+        #verifyBtn {
+            background: #1f3a4e;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 18px -8px #0f1e28;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        #verifyBtn:hover {
+            background: #122b38;
+            transform: scale(0.97);
+        }
+        /* Ô HIỂN THỊ TRẠNG THÁI ĐĂNG NHẬP – kích thước đồng bộ */
+        #message {
+            background: #e2ebf2;
+            color: #1f405b;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px solid transparent;
+        }
+        .note-area {
+            margin: 16px 0 32px;
+        }
+        /* VÙNG NOTE LỚN, RỘNG RÃI */
+        #note {
+            width: 100%;
+            min-height: 480px;         /* cao thoải mái */
+            padding: 30px 36px;
+            font-size: 1.3rem;        /* chữ to dễ đọc */
+            line-height: 1.75;
+            border: none;
+            border-radius: 36px;
+            background: white;
+            box-shadow: inset 0 12px 30px rgba(0,0,0,0.02), 0 12px 24px rgba(44,62,80,0.08);
+            border: 1px solid rgba(255,255,255,0.9);
+            resize: vertical;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-weight: 450;
+            transition: 0.18s;
+            color: #152b36;
+        }
+        #note:disabled {
+            background: #f5faff;
+            color: #4d6572;
+            opacity: 0.95;
+            border: 1px dashed #8ea9ba;
+            cursor: not-allowed;
+        }
+        #note:enabled {
+            background: #fffef7;
+            border: 2px solid #5982a0;
+            box-shadow: 0 0 0 6px rgba(78, 130, 175, 0.06);
+        }
+        .time-stamp {
+            margin-top: 24px;
+            padding: 18px 30px;
+            background: #d3e0ea;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            color: #183b4a;
+            font-weight: 550;
+            border: 1px solid rgba(255,255,255,0.7);
+            backdrop-filter: blur(4px);
+        }
+        .time-icon {
+            font-size: 1.6rem;
+            margin-right: 10px;
+        }
+        #lastModifiedTime {
+            background: #1f3a4e;
+            color: white;
+            padding: 8px 26px;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: inset 0 1px 6px rgba(255,255,255,0.2);
+        }
+        .footer-note {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #4b6a7a;
+            text-align: right;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        @media (max-width: 750px) {
+            .admin-zone { 
+                flex-direction: column; 
+                align-items: stretch; 
+                border-radius: 40px;
+            }
+            .admin-label { 
+                text-align: center; 
+                white-space: normal;
+            }
+            #codeInput, #verifyBtn, #message {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notepad-container">
+        <h1>
+            📘 Notepad 
+            <span>ADMIN</span>
+        </h1>
+        
+        <!-- KHU VỰC NHẬP CODE – BA PHẦN TỬ ĐỒNG CỠ, KHÔNG LỘ MÃ -->
+        <div class="admin-zone">
+            <span class="admin-label">🔐 Mã admin</span>
+            <input type="password" id="codeInput" placeholder="Nhập mật mã" autocomplete="off">
+            <button id="verifyBtn">✓ XÁC THỰC</button>
+            <span id="message">⛔ Chưa đăng nhập</span>
+        </div>
+        
+        <!-- VÙNG NOTE LỚN – CHỈ ENABLE KHI NHẬP ĐÚNG MÃ -->
+        <div class="note-area">
+            <textarea id="note" disabled placeholder="🔒 Nhập đúng mã admin để chỉnh sửa..."></textarea>
+        </div>
+        
+        <!-- THỜI GIAN LẦN CUỐI THAY ĐỔI -->
+        <div class="time-stamp">
+            <span>
+                <span class="time-icon">🕒</span> Lần cuối thay đổi:
+            </span>
+            <span id="lastModifiedTime">Chưa có thay đổi</span>
+        </div>
+        <!-- KHÔNG HIỂN THỊ BẤT KỲ MÃ NÀO -->
+        <div class="footer-note">
+            ⚡ Chỉ admin mới được chỉnh sửa. Mã được bảo mật tuyệt đối.
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // ---------- MÃ ADMIN 25012008 – TUYỆT ĐỐI KHÔNG HIỆN RA UI ----------
+            const ADMIN_CODE = "25012008";
+            
+            // ---------- ELEMENT REFS ----------
+            const codeInput = document.getElementById('codeInput');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const messageSpan = document.getElementById('message');
+            const noteTextarea = document.getElementById('note');
+            const lastModifiedSpan = document.getElementById('lastModifiedTime');
+
+            // ---------- LOCALSTORAGE ----------
+            const STORAGE_NOTE_KEY = 'secure_notepad_content';
+            const STORAGE_TIME_KEY = 'secure_notepad_lastmod';
+
+            // ---------- CẬP NHẬT THỜI GIAN VÀ LƯU ----------
+            function updateLastModifiedTime() {
+                const now = new Date();
+                const timeString = now.toLocaleString('vi-VN', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                });
+                lastModifiedSpan.textContent = timeString;
+                localStorage.setItem(STORAGE_TIME_KEY, timeString);
+            }
+
+            // ---------- LƯU NỘI DUNG NOTE + THỜI GIAN ----------
+            function saveNoteAndTime() {
+                const content = noteTextarea.value;
+                localStorage.setItem(STORAGE_NOTE_KEY, content);
+                updateLastModifiedTime();
+            }
+
+            // ---------- TẢI DỮ LIỆU ĐÃ LƯU ----------
+            function loadSavedData() {
+                const savedNote = localStorage.getItem(STORAGE_NOTE_KEY);
+                if (savedNote !== null) {
+                    noteTextarea.value = savedNote;
+                } else {
+                    noteTextarea.value = "📝 Ghi chú của admin. Hãy nhập mã để chỉnh sửa.";
+                }
+
+                const savedTime = localStorage.getItem(STORAGE_TIME_KEY);
+                if (savedTime !== null) {
+                    lastModifiedSpan.textContent = savedTime;
+                } else {
+                    if (localStorage.getItem(STORAGE_NOTE_KEY) !== null) {
+                        updateLastModifiedTime();
+                    } else {
+                        lastModifiedSpan.textContent = "Chưa có thay đổi";
+                    }
+                }
+            }
+
+            // ---------- XÁC THỰC MÃ ADMIN (HOÀN TOÀN ẨN) ----------
+            function verifyAdminCode() {
+                const enteredCode = codeInput.value.trim();
+                
+                if (enteredCode === ADMIN_CODE) {
+                    // ✅ ĐÚNG MÃ – Enable notepad, thông báo thành công
+                    noteTextarea.disabled = false;
+                    noteTextarea.focus();
+                    messageSpan.innerHTML = '✅ Đã đăng nhập • được phép sửa';
+                    messageSpan.style.background = '#d9f0d7';
+                    messageSpan.style.color = '#0f4b2e';
+                    codeInput.value = '';   // Xóa ô nhập sau khi xác thực thành công
+                } else {
+                    // ❌ SAI MÃ
+                    noteTextarea.disabled = true;
+                    messageSpan.innerHTML = '❌ Sai mã! Chỉ admin mới sửa.';
+                    messageSpan.style.background = '#ffe1de';
+                    messageSpan.style.color = '#9e2b1f';
+                }
+            }
+
+            // ---------- THIẾT LẬP SỰ KIỆN ----------
+            function initEvents() {
+                verifyBtn.addEventListener('click', verifyAdminCode);
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        verifyAdminCode();
+                    }
+                });
+                noteTextarea.addEventListener('input', function() {
+                    if (!noteTextarea.disabled) {
+                        saveNoteAndTime();
+                    }
+                });
+            }
+
+            // ---------- KHỞI TẠO ----------
+            loadSavedData();
+            initEvents();
+            noteTextarea.disabled = true;   // Luôn khóa khi mới vào trang
+
+            // Đồng bộ: nếu có note nhưng chưa có thời gian, tạo mới
+            if (localStorage.getItem(STORAGE_NOTE_KEY) && !localStorage.getItem(STORAGE_TIME_KEY)) {
+                updateLastModifiedTime();
+            }
+        })();
+    </script>
+</body>
+</html>
